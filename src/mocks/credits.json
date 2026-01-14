@@ -1,0 +1,19 @@
+{
+    "balance": 2500,
+    "history": [
+        {
+            "id": "txn_001",
+            "type": "purchase",
+            "amount": 5000,
+            "credits": 5000,
+            "date": "2026-01-01T09:00:00Z"
+        },
+        {
+            "id": "txn_002",
+            "type": "campaign_send",
+            "amount": -90,
+            "credits": -100,
+            "date": "2026-01-07T12:00:00Z"
+        }
+    ]
+}

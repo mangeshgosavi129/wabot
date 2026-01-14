@@ -1,0 +1,26 @@
+[
+    {
+        "id": "tpl_mark_01",
+        "category": "marketing",
+        "language": "en",
+        "body": "Hi {{name}}! We have a limited offer: 10% off processing fee if you apply by {{expiry_date}}. Reply YES to know more.",
+        "status": "approved",
+        "cost": 0.9
+    },
+    {
+        "id": "tpl_util_01",
+        "category": "utility",
+        "language": "en",
+        "body": "Reminder: your KYC is pending. Please upload PAN on the link: {{link}}",
+        "status": "approved",
+        "cost": 0.13
+    },
+    {
+        "id": "tpl_auth_01",
+        "category": "authentication",
+        "language": "en",
+        "body": "Your verification code is {{code}}. It expires in 10 minutes.",
+        "status": "approved",
+        "cost": 0.13
+    }
+]
