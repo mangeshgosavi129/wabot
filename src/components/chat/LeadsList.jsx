@@ -1,14 +1,19 @@
 import React, { useState } from 'react';
-import { Search, Filter } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { Input } from '../ui/Input';
+import { ConversationStage, IntentLevel } from '../../lib/types';
 
-const LeadsList = ({ leads, selectedId, onSelect }) => {
+const LeadsList = ({ leads, conversations, selectedId, onSelect }) => {
     const [search, setSearch] = useState('');
 
-    const filteredLeads = leads.filter(l =>
-        l.name.toLowerCase().includes(search.toLowerCase()) ||
-        l.phone.includes(search)
+    const filteredLeads = (leads || []).filter(l =>
+        (l.name || '').toLowerCase().includes(search.toLowerCase()) ||
+        (l.phone || '').includes(search)
     );
+
+    const getLeadConversation = (leadId) => {
+        return (conversations || []).find(c => c.lead_id === leadId);
+    };
 
     return (
         <div className="flex flex-col h-full border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 w-80 transition-colors">
@@ -23,40 +28,51 @@ const LeadsList = ({ leads, selectedId, onSelect }) => {
                         onChange={(e) => setSearch(e.target.value)}
                     />
                 </div>
-                {/* Filter tags could go here */}
             </div>
 
             <div className="flex-1 overflow-y-auto">
-                {filteredLeads.map((lead) => (
-                    <div
-                        key={lead.id}
-                        onClick={() => onSelect(lead.id)}
-                        className={`p-4 border-b border-gray-50 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors ${selectedId === lead.id ? 'bg-primary/5 dark:bg-primary/10 border-l-4 border-l-primary' : 'border-l-4 border-l-transparent'
-                            }`}
-                    >
-                        <div className="flex justify-between items-start mb-1">
-                            <h3 className={`font-medium text-sm ${selectedId === lead.id ? 'text-primary' : 'text-gray-900 dark:text-white'}`}>
-                                {lead.name}
-                            </h3>
-                            <span className="text-xs text-gray-400">10:30 AM</span> {/* Mock time */}
-                        </div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate mb-2">{lead.lastMessage}</p>
+                {filteredLeads.map((lead) => {
+                    const conv = getLeadConversation(lead.id);
+                    return (
+                        <div
+                            key={lead.id}
+                            onClick={() => onSelect(lead.id)}
+                            className={`p-4 border-b border-gray-50 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors ${selectedId === lead.id ? 'bg-primary/5 dark:bg-primary/10 border-l-4 border-l-primary' : 'border-l-4 border-l-transparent'
+                                }`}
+                        >
+                            <div className="flex justify-between items-start mb-1">
+                                <h3 className={`font-medium text-sm truncate max-w-[150px] ${selectedId === lead.id ? 'text-primary' : 'text-gray-900 dark:text-white'}`}>
+                                    {lead.name || lead.phone}
+                                </h3>
+                                {conv?.last_message_at && (
+                                    <span className="text-[10px] text-gray-400">
+                                        {new Date(conv.last_message_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    </span>
+                                )}
+                            </div>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 truncate mb-2">
+                                {conv?.last_message || 'New conversation'}
+                            </p>
 
-                        <div className="flex items-center gap-2">
-                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${lead.stage === 'New Lead' ? 'bg-primary/10 text-primary' :
-                                lead.stage === 'Contacted' ? 'bg-accent/10 text-accent' :
-                                    'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
-                                }`}>
-                                {lead.stage}
-                            </span>
-                            {lead.score > 70 && (
-                                <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-400">
-                                    High Intent
+                            <div className="flex items-center gap-2">
+                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium border ${lead.conversation_stage === ConversationStage.GREETING ? 'bg-primary/10 text-primary border-primary/20' :
+                                        lead.conversation_stage === ConversationStage.CLOSED ? 'bg-green-100 text-green-700 border-green-200' :
+                                            'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-600'
+                                    }`}>
+                                    {lead.conversation_stage || 'New'}
                                 </span>
-                            )}
+                                {lead.intent_level === IntentLevel.HIGH && (
+                                    <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-400">
+                                        High Intent
+                                    </span>
+                                )}
+                            </div>
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
+                {!filteredLeads.length && (
+                    <p className="text-center text-gray-400 py-8 text-sm">No leads found.</p>
+                )}
             </div>
         </div>
     );

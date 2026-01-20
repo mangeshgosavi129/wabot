@@ -1,57 +1,16 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import usersData from '../mocks/users.json';
-import leadsData from '../mocks/leads.json';
-import conversationsData from '../mocks/conversations.json';
-import templatesData from '../mocks/templates.json';
-import campaignsData from '../mocks/campaigns.json';
-import creditsData from '../mocks/credits.json';
-import analyticsData from '../mocks/analytics.json';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { api } from '../lib/apis';
 
 const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
-    const [user, setUser] = useState(usersData[0]); // Mock login
-    const [leads, setLeads] = useState(leadsData);
-    const [conversations, setConversations] = useState(conversationsData);
-    const [templates, setTemplates] = useState(templatesData);
-    const [campaigns, setCampaigns] = useState(campaignsData);
-    const [credits, setCredits] = useState(creditsData);
-    const [analytics, setAnalytics] = useState(analyticsData);
-
-    // Helper to update credits
-    const deductCredits = (amount) => {
-        setCredits(prev => ({
-            ...prev,
-            balance: prev.balance - amount,
-            history: [
-                {
-                    id: `txn_${Date.now()}`,
-                    type: 'usage',
-                    amount: -amount,
-                    credits: -amount, // Simplified for mock
-                    date: new Date().toISOString()
-                },
-                ...prev.history
-            ]
-        }));
-    };
-
-    const addCredits = (amount, cost) => {
-        setCredits(prev => ({
-            ...prev,
-            balance: prev.balance + amount,
-            history: [
-                {
-                    id: `txn_${Date.now()}`,
-                    type: 'purchase',
-                    amount: cost,
-                    credits: amount,
-                    date: new Date().toISOString()
-                },
-                ...prev.history
-            ]
-        }));
-    };
+    const [user, setUser] = useState(null);
+    const [leads, setLeads] = useState([]);
+    const [conversations, setConversations] = useState([]);
+    const [templates, setTemplates] = useState([]);
+    const [analytics, setAnalytics] = useState(null);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [loading, setLoading] = useState(true);
 
     const [theme, setTheme] = useState(() => {
         if (typeof window !== 'undefined') {
@@ -71,15 +30,68 @@ export const AppProvider = ({ children }) => {
         }
     };
 
+    const fetchInitialData = useCallback(async () => {
+        try {
+            setLoading(true);
+            const [leadsData, conversationsData, templatesData, statsData] = await Promise.all([
+                api.getLeads(),
+                api.getConversations(),
+                api.getTemplates(),
+                api.getDashboardStats()
+            ]);
+
+            setLeads(leadsData || []);
+            setConversations(conversationsData || []);
+            setTemplates(templatesData || []);
+            setAnalytics(statsData);
+        } catch (error) {
+            console.error('Failed to fetch initial data:', error);
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        const token = localStorage.getItem('auth_token');
+        if (token) {
+            setIsLoggedIn(true);
+            setUser({ email: 'admin@example.com' });
+            fetchInitialData();
+        } else {
+            setLoading(false);
+        }
+
+        if (theme === 'dark') {
+            document.documentElement.classList.add('dark');
+        }
+    }, [fetchInitialData, theme]);
+
+    const login = async (email, password) => {
+        const response = await api.login({ email, password });
+        setIsLoggedIn(true);
+        setUser({ email, id: response.user_id, organization_id: response.organization_id });
+        await fetchInitialData();
+    };
+
+    const logout = () => {
+        localStorage.removeItem('auth_token');
+        setIsLoggedIn(false);
+        setUser(null);
+        setLeads([]);
+        setConversations([]);
+        setTemplates([]);
+        setAnalytics(null);
+    };
+
     const value = {
         user, setUser,
         leads, setLeads,
         conversations, setConversations,
         templates, setTemplates,
-        campaigns, setCampaigns,
-        credits, addCredits, deductCredits,
         analytics, setAnalytics,
-        theme, toggleTheme
+        theme, toggleTheme,
+        isLoggedIn, login, logout,
+        loading, fetchInitialData
     };
 
     return (
