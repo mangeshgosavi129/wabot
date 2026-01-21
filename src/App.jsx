@@ -14,6 +14,7 @@ import Login from './pages/Login';
 import SignupCreateOrg from './pages/SignupCreateOrg';
 import SignupJoinOrg from './pages/SignupJoinOrg';
 import ProtectedRoute from './components/ProtectedRoute';
+import Users from './pages/Users';
 
 function App() {
   return (
@@ -43,6 +44,7 @@ function App() {
           <Route path="leads" element={<Leads />} />
           <Route path="analytics" element={<Analytics />} />
           <Route path="settings" element={<Settings />} />
+          <Route path="users" element={<Users/>}/>
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />
