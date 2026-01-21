@@ -19,9 +19,13 @@ import {
     TemplateUpdate,
     TemplateStatusOut,
     AnalyticsOut,
+    AnalyticsReportOut,
+    OrganizationOut,
+    UserOut,
     WhatsAppIntegrationOut,
     WhatsAppIntegrationCreate,
     WhatsAppIntegrationUpdate,
+    WSConversationUpdated,
     SuccessResponse
 } from './types';
 
@@ -50,7 +54,7 @@ class ApiClient {
 
         if (response.status === 401) {
             localStorage.removeItem('auth_token');
-            localStorage.removeItem('user_email');
+
             // We can't easily trigger a navigation from here without a circular dependency or event bus
             // But throwing an error will let the caller handle it.
             throw new Error('Unauthorized');
@@ -94,6 +98,10 @@ class ApiClient {
         });
         localStorage.setItem('auth_token', res.access_token);
         return res;
+    }
+
+    async getMe(): Promise<UserOut> {
+        return this.request<UserOut>('/auth/me');
     }
 
     // Dashboard
@@ -150,11 +158,11 @@ class ApiClient {
 
     // CTAs
     async getCTAs(): Promise<CTAOut[]> {
-        return this.request<CTAOut[]>('/ctas');
+        return this.request<CTAOut[]>('/ctas/');
     }
 
     async createCTA(payload: CTACreate): Promise<CTAOut> {
-        return this.request<CTAOut>('/ctas', {
+        return this.request<CTAOut>('/ctas/', {
             method: 'POST',
             body: JSON.stringify(payload),
         });
@@ -211,6 +219,33 @@ class ApiClient {
     // Analytics
     async getAnalytics(): Promise<AnalyticsOut[]> {
         return this.request<AnalyticsOut[]>('/analytics');
+    }
+
+    async getAnalyticsReport(): Promise<AnalyticsReportOut> {
+        return this.request<AnalyticsReportOut>('/analytics/report');
+    }
+
+    // Users
+    async getUsers(): Promise<UserOut[]> {
+        return this.request<UserOut[]>('/users');
+    }
+
+    async updateUser(userId: string, payload: Partial<UserOut>): Promise<UserOut> {
+        return this.request<UserOut>(`/users/${userId}`, {
+            method: 'PATCH',
+            body: JSON.stringify(payload),
+        });
+    }
+
+    async deleteUser(userId: string): Promise<void> {
+        return this.request<void>(`/users/${userId}`, {
+            method: 'DELETE',
+        });
+    }
+
+    // Organizations
+    async getOrganization(): Promise<OrganizationOut> {
+        return this.request<OrganizationOut>(`/organisations/`);
     }
 
     // Settings

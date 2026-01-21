@@ -1,14 +1,17 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { LayoutDashboard, MessageSquare, Megaphone, FileText, Users, BarChart3, Settings, CreditCard, CheckCircle } from 'lucide-react';
+import { useApp } from '../context/AppContext';
 
 const Sidebar = () => {
+    const { user } = useApp();
     const navItems = [
         { name: 'Dashboard', path: '/', icon: LayoutDashboard },
         { name: 'Actions', path: '/actions', icon: CheckCircle },
         { name: 'Inbox', path: '/inbox', icon: MessageSquare },
         { name: 'Templates', path: '/templates', icon: FileText },
         { name: 'Leads', path: '/leads', icon: Users },
+        { name: 'Users', path: '/users', icon: Users },
         { name: 'Analytics', path: '/analytics', icon: BarChart3 },
         { name: 'Settings', path: '/settings', icon: Settings },
     ];
@@ -44,11 +47,15 @@ const Sidebar = () => {
             <div className="p-4 border-t border-gray-100 dark:border-gray-700">
                 <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
-                        JS
+                        {user?.name?.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'U'}
                     </div>
                     <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 dark:text-white truncate">John Smith</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">Admin</p>
+                        <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                            {user?.name || 'User'}
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                            {user?.email}
+                        </p>
                     </div>
                 </div>
             </div>

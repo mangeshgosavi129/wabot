@@ -114,6 +114,15 @@ export interface SuccessResponse {
     success: true;
 }
 
+export interface OrganizationOut {
+    id: string;
+    name: string;
+    is_active: boolean;
+    created_at: string;
+    updated_at?: string;
+}
+
+
 export interface DashboardStatsOut {
     total_conversations: number;
     total_messages: number;
@@ -304,6 +313,14 @@ export interface WSMessageReceived {
 export interface WSMessageSent {
     message: MessageOut;
 }
+
+export interface AnalyticsReportOut {
+    sentiment_breakdown: Record<string, number>;
+    peak_activity_time: Record<string, number>;
+    message_from_stats: Record<string, number>;
+    intent_level_stats: Record<string, number>;
+}
+
 
 export interface WSConversationUpdated {
     conversation: ConversationOut;

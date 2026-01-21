@@ -4,8 +4,11 @@ import { Input } from '../components/ui/Input';
 import { Users, Plug, Shield, Check, Loader2 } from 'lucide-react';
 import { api } from '../lib/apis';
 
+import { useApp } from '../context/AppContext';
+
 const Settings = () => {
-  const [activeTab, setActiveTab] = useState('Integrations');
+  const { user } = useApp();
+  const [activeTab, setActiveTab] = useState('General');
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [showToast, setShowToast] = useState(false);
@@ -14,8 +17,8 @@ const Settings = () => {
 
   // ✅ Organization form state
   const [org, setOrg] = useState({
-    org_name: '',
-    org_id: '',
+    name: '',
+    id: '',
   });
 
   // Form State for WhatsApp Cloud API
@@ -44,13 +47,14 @@ const Settings = () => {
           }));
         }
 
-        // ✅ Fetch Organization details (you need these endpoints)
-        // If not available yet, remove this block.
-        try {
-          const orgRes = await api.getOrganization(); // { org_name, org_id }
-          if (orgRes) setOrg(orgRes);
-        } catch (err) {
-          console.warn('Org details API not available yet:', err);
+        // ✅ Fetch Organization details
+        if (user?.organization_id) {
+          try {
+            const orgRes = await api.getOrganization();
+            if (orgRes) setOrg(orgRes);
+          } catch (err) {
+            console.warn('Org details API failed:', err);
+          }
         }
       } catch (error) {
         console.error('Failed to fetch settings:', error);
@@ -59,8 +63,10 @@ const Settings = () => {
       }
     };
 
-    fetchSettings();
-  }, []);
+    if (user) {
+      fetchSettings();
+    }
+  }, [user]);
 
   const showSuccessToast = () => {
     setShowToast(true);
@@ -84,28 +90,13 @@ const Settings = () => {
     }
   };
 
-  const handleSaveOrg = async () => {
-    setIsSaving(true);
-    try {
-        await api.updateOrganization({
-        org_name: org.org_name, // ✅ only name
-        });
 
-        showSuccessToast();
-    } catch (error) {
-        alert('Failed to save organization details');
-    } finally {
-        setIsSaving(false);
-    }
-  };
 
   const handleChange = (field, value) => {
     setConfig((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleOrgChange = (field, value) => {
-    setOrg((prev) => ({ ...prev, [field]: value }));
-  };
+
 
   const handleDisconnect = async () => {
     if (!confirm('Are you sure you want to disconnect?')) return;
@@ -162,11 +153,10 @@ const Settings = () => {
             <button
               key={item.name}
               onClick={() => setActiveTab(item.name)}
-              className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                activeTab === item.name
-                  ? 'bg-white dark:bg-gray-800 shadow-sm text-primary ring-1 ring-gray-100 dark:ring-gray-700'
-                  : 'text-gray-600 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50'
-              }`}
+              className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === item.name
+                ? 'bg-white dark:bg-gray-800 shadow-sm text-primary ring-1 ring-gray-100 dark:ring-gray-700'
+                : 'text-gray-600 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50'
+                }`}
             >
               <item.icon className="w-4 h-4" /> {item.name}
             </button>
@@ -187,25 +177,22 @@ const Settings = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Input
                     label="Organization Name"
-                    value={org.org_name}
-                    onChange={(e) => handleOrgChange('org_name', e.target.value)}
-                    placeholder="Enter organization name"
+                    value={org.name || ''}
+                    placeholder="Organization name"
+                    readOnly
+                    className="bg-gray-50 text-gray-500"
                   />
                   <Input
                     label="Organization ID"
-                    value={org.org_id}
-                    onChange={(e) => handleOrgChange('org_id', e.target.value)}
-                    placeholder="Enter organization id"
+                    value={org.id || ''}
+                    placeholder="Organization ID"
+                    readOnly
+                    className="bg-gray-50 text-gray-500"
                   />
                 </div>
 
-                <div className="flex justify-end mt-6">
-                  <Button onClick={handleSaveOrg} disabled={isSaving}>
-                    {isSaving && (
-                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                    )}
-                    Save Organization Details
-                  </Button>
+                <div className="mt-4 text-xs text-gray-500">
+                  <p>To update organization details, please contact support.</p>
                 </div>
               </div>
             </div>

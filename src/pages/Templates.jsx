@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
+import { api } from '../lib/apis';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Search, Plus, MoreHorizontal, CheckCircle, Clock } from 'lucide-react';
@@ -8,6 +9,9 @@ import { TemplateStatus } from '../lib/types';
 
 const Templates = () => {
     const { templates, loading } = useApp();
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [newTemplate, setNewTemplate] = useState({ name: '', content: '' });
+    const [creating, setCreating] = useState(false);
     const [search, setSearch] = useState('');
     const [selectedTemplate, setSelectedTemplate] = useState(null);
 
@@ -16,13 +20,21 @@ const Templates = () => {
         (t.content || '').toLowerCase().includes(search.toLowerCase())
     );
 
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center h-full">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-            </div>
-        );
-    }
+    const handleCreateTemplate = async () => {
+        try {
+            setCreating(true);
+            await api.createTemplate(newTemplate);
+            setIsCreateModalOpen(false);
+            setNewTemplate({ name: '', content: '' });
+            // Ideally trigger refresh or update context
+            window.location.reload(); // Simple refresh for now
+        } catch (error) {
+            console.error('Failed to create template:', error);
+            alert('Failed to create template');
+        } finally {
+            setCreating(false);
+        }
+    };
 
     return (
         <div className="space-y-6 animate-fade-in">
@@ -31,7 +43,7 @@ const Templates = () => {
                     <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Message Templates</h1>
                     <p className="text-gray-500 dark:text-gray-400 mt-1">Manage standard messages approved by WhatsApp.</p>
                 </div>
-                <Button><Plus className="w-4 h-4 mr-2" /> New Template</Button>
+                <Button onClick={() => setIsCreateModalOpen(true)}><Plus className="w-4 h-4 mr-2" /> New Template</Button>
             </div>
 
             <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
@@ -77,6 +89,7 @@ const Templates = () => {
 
                             <div className="mt-4 flex gap-2">
                                 <Button variant="outline" size="sm" className="flex-1" onClick={() => setSelectedTemplate(template)}>Preview</Button>
+                                {/* Edit functionality to be implemented */}
                                 <Button variant="ghost" size="sm" className="flex-1">Edit</Button>
                             </div>
                         </div>
@@ -100,6 +113,39 @@ const Templates = () => {
                             {selectedTemplate?.content}
                         </p>
                         <p className="text-[10px] text-gray-400 mt-1 text-right">10:30 AM</p>
+                    </div>
+                </div>
+            </Modal>
+
+            <Modal
+                isOpen={isCreateModalOpen}
+                onClose={() => setIsCreateModalOpen(false)}
+                title="Create New Template"
+            >
+                <div className="space-y-4">
+                    <Input
+                        label="Template Name"
+                        placeholder="e.g. welcome_msg"
+                        value={newTemplate.name}
+                        onChange={(e) => setNewTemplate({ ...newTemplate, name: e.target.value })}
+                    />
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Content
+                        </label>
+                        <textarea
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-800 dark:text-white"
+                            rows={4}
+                            placeholder="Hello {{1}}, welcome to our platform!"
+                            value={newTemplate.content}
+                            onChange={(e) => setNewTemplate({ ...newTemplate, content: e.target.value })}
+                        />
+                    </div>
+                    <div className="flex justify-end gap-2 mt-4">
+                        <Button variant="outline" onClick={() => setIsCreateModalOpen(false)}>Cancel</Button>
+                        <Button onClick={handleCreateTemplate} disabled={creating}>
+                            {creating ? 'Creating...' : 'Create Template'}
+                        </Button>
                     </div>
                 </div>
             </Modal>

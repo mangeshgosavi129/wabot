@@ -61,11 +61,9 @@ export const AppProvider = ({ children }) => {
             const token = localStorage.getItem('auth_token');
             if (token) {
                 try {
-                    // In a real app, you might want to call a /me endpoint to verify token
-                    // For now, we assume token is valid if present and fetch initial data
+                    const userData = await api.getMe();
                     setIsLoggedIn(true);
-                    // Minimal user info from token or stored elsewhere
-                    setUser({ email: localStorage.getItem('user_email') || 'user@example.com' });
+                    setUser(userData);
                     await fetchInitialData();
                 } catch (error) {
                     console.error('Auth verification failed:', error);
@@ -83,32 +81,36 @@ export const AppProvider = ({ children }) => {
     }, [fetchInitialData, theme]);
 
     const login = async (email, password) => {
-        const response = await api.login({ email, password });
-        localStorage.setItem('user_email', email);
+        await api.login({ email, password });
+        const userData = await api.getMe();
+
         setIsLoggedIn(true);
-        setUser({ email, id: response.user_id, organization_id: response.organization_id });
+        setUser(userData);
         await fetchInitialData();
     };
 
     const signupCreateOrg = async (payload) => {
-        const response = await api.signupCreateOrg(payload);
-        localStorage.setItem('user_email', payload.email);
+        await api.signupCreateOrg(payload);
+        const userData = await api.getMe();
+
         setIsLoggedIn(true);
-        setUser({ email: payload.email, id: response.user_id, organization_id: response.organization_id });
+        setUser(userData);
         await fetchInitialData();
     };
 
     const signupJoinOrg = async (payload) => {
-        const response = await api.signupJoinOrg(payload);
-        localStorage.setItem('user_email', payload.email);
+        await api.signupJoinOrg(payload);
+        const userData = await api.getMe();
+
         setIsLoggedIn(true);
-        setUser({ email: payload.email, id: response.user_id, organization_id: response.organization_id });
+        setUser(userData);
         await fetchInitialData();
     };
 
     const logout = () => {
         localStorage.removeItem('auth_token');
-        localStorage.removeItem('user_email');
+
+
         setIsLoggedIn(false);
         setUser(null);
         setLeads([]);
