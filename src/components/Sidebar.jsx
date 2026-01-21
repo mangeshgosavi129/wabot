@@ -7,11 +7,9 @@ const Sidebar = () => {
         { name: 'Dashboard', path: '/', icon: LayoutDashboard },
         { name: 'Actions', path: '/actions', icon: CheckCircle },
         { name: 'Inbox', path: '/inbox', icon: MessageSquare },
-        { name: 'Campaigns', path: '/campaigns', icon: Megaphone },
         { name: 'Templates', path: '/templates', icon: FileText },
         { name: 'Leads', path: '/leads', icon: Users },
         { name: 'Analytics', path: '/analytics', icon: BarChart3 },
-        { name: 'Credits', path: '/credits', icon: CreditCard },
         { name: 'Settings', path: '/settings', icon: Settings },
     ];
 

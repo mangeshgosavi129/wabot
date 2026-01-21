@@ -4,7 +4,7 @@ import { Bell, HelpCircle, Sun, Moon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const Header = () => {
-    const { credits, user, theme, toggleTheme } = useApp();
+    const { user, theme, toggleTheme } = useApp();
     const navigate = useNavigate();
 
     return (
@@ -12,7 +12,7 @@ const Header = () => {
             <div className="flex items-center">
                 <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
                     {/* Dynamic header title could go here based on route */}
-                    Good Morning, {user?.name.split(' ')[0]}
+                    Good Morning, {user?.name?.split(' ')[0] || 'Admin'}
                 </h2>
             </div>
 
@@ -23,14 +23,6 @@ const Header = () => {
                     className="p-2 text-gray-400 hover:text-primary dark:text-gray-400 dark:hover:text-primary transition-colors"
                 >
                     {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-                </button>
-
-                <button
-                    onClick={() => navigate('/credits')}
-                    className="flex items-center gap-2 px-3 py-1.5 bg-primary/5 text-primary rounded-full text-sm font-medium border border-primary/20 hover:bg-primary/10 transition-colors"
-                >
-                    <span className="w-2 h-2 bg-primary rounded-full animate-pulse"></span>
-                    {credits.balance.toLocaleString()} Credits
                 </button>
 
                 <div className="h-6 w-px bg-gray-200 dark:bg-gray-700 mx-2"></div>

@@ -4,9 +4,9 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { TrendingUp, MessageCircle, PieChart as PieChartIcon, Loader2 } from 'lucide-react';
 
 const Analytics = () => {
-    const { analytics, loading } = useApp();
+    const { dashboardStats, timeSeriesAnalytics, loading } = useApp();
 
-    if (loading || !analytics) {
+    if (loading || !dashboardStats) {
         return (
             <div className="flex items-center justify-center h-full">
                 <Loader2 className="w-12 h-12 animate-spin text-primary" />
@@ -15,13 +15,13 @@ const Analytics = () => {
     }
 
     // Map Sentiment Breakdown
-    const sentimentData = Object.entries(analytics.sentiment_breakdown || {}).map(([name, value]) => ({
+    const sentimentData = Object.entries(dashboardStats.sentiment_breakdown || {}).map(([name, value]) => ({
         name: name.charAt(0).toUpperCase() + name.slice(1),
         value
     }));
 
     // Map Peak Hours
-    const hourlyData = Object.entries(analytics.peak_hours || {}).map(([time, volume]) => ({
+    const hourlyData = Object.entries(dashboardStats.peak_hours || {}).map(([time, volume]) => ({
         time,
         volume
     })).sort((a, b) => {
@@ -31,6 +31,9 @@ const Analytics = () => {
     });
 
     const COLORS = ['#22d3ee', '#7c3aed', '#db2777', '#facc15', '#f87171', '#a855f7'];
+
+    const hasSentimentData = sentimentData.length > 0;
+    const hasHourlyData = hourlyData.length > 0;
 
     return (
         <div className="space-y-8 animate-fade-in pb-8">
@@ -48,33 +51,39 @@ const Analytics = () => {
                         <PieChartIcon className="w-5 h-5 text-primary" /> Sentiment Breakdown
                     </h3>
                     <div className="h-80 flex items-center justify-center">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <PieChart>
-                                <Pie
-                                    data={sentimentData}
-                                    cx="50%"
-                                    cy="50%"
-                                    innerRadius={80}
-                                    outerRadius={100}
-                                    paddingAngle={5}
-                                    dataKey="value"
-                                >
-                                    {sentimentData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                    ))}
-                                </Pie>
-                                <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
-                            </PieChart>
-                        </ResponsiveContainer>
+                        {hasSentimentData ? (
+                            <ResponsiveContainer width="100%" height="100%">
+                                <PieChart>
+                                    <Pie
+                                        data={sentimentData}
+                                        cx="50%"
+                                        cy="50%"
+                                        innerRadius={80}
+                                        outerRadius={100}
+                                        paddingAngle={5}
+                                        dataKey="value"
+                                    >
+                                        {sentimentData.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                                </PieChart>
+                            </ResponsiveContainer>
+                        ) : (
+                            <div className="text-gray-400 dark:text-gray-500 text-sm italic">No sentiment data recorded yet</div>
+                        )}
                     </div>
-                    <div className="flex justify-center flex-wrap gap-4 mt-4">
-                        {sentimentData.map((entry, index) => (
-                            <div key={entry.name} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
-                                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }}></div>
-                                {entry.name} ({entry.value})
-                            </div>
-                        ))}
-                    </div>
+                    {hasSentimentData && (
+                        <div className="flex justify-center flex-wrap gap-4 mt-4">
+                            {sentimentData.map((entry, index) => (
+                                <div key={entry.name} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+                                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }}></div>
+                                    {entry.name} ({entry.value})
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
 
                 {/* Peak Activity Hours */}
@@ -82,19 +91,23 @@ const Analytics = () => {
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
                         <MessageCircle className="w-5 h-5 text-primary" /> Peak Activity Hours
                     </h3>
-                    <div className="h-80">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={hourlyData}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" className="dark:stroke-gray-700" />
-                                <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{ fill: '#6b7280' }} />
-                                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6b7280' }} />
-                                <Tooltip
-                                    cursor={{ fill: 'transparent' }}
-                                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                                />
-                                <Bar dataKey="volume" fill="#7c3aed" radius={[4, 4, 0, 0]} />
-                            </BarChart>
-                        </ResponsiveContainer>
+                    <div className="h-80 flex items-center justify-center">
+                        {hasHourlyData ? (
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={hourlyData}>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" className="dark:stroke-gray-700" />
+                                    <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{ fill: '#6b7280' }} />
+                                    <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6b7280' }} />
+                                    <Tooltip
+                                        cursor={{ fill: 'transparent' }}
+                                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                    />
+                                    <Bar dataKey="volume" fill="#7c3aed" radius={[4, 4, 0, 0]} />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        ) : (
+                            <div className="text-gray-400 dark:text-gray-500 text-sm italic">No activity data recorded yet</div>
+                        )}
                     </div>
                 </div>
 
@@ -106,15 +119,15 @@ const Analytics = () => {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700">
                             <p className="text-sm text-gray-500">Total Conversations</p>
-                            <p className="text-2xl font-bold text-gray-900 dark:text-white uppercase">{analytics.total_conversations}</p>
+                            <p className="text-2xl font-bold text-gray-900 dark:text-white uppercase">{dashboardStats.total_conversations}</p>
                         </div>
                         <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700">
                             <p className="text-sm text-gray-500">Total Messages</p>
-                            <p className="text-2xl font-bold text-gray-900 dark:text-white uppercase">{analytics.total_messages}</p>
+                            <p className="text-2xl font-bold text-gray-900 dark:text-white uppercase">{dashboardStats.total_messages}</p>
                         </div>
                         <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700">
                             <p className="text-sm text-gray-500">Active Leads</p>
-                            <p className="text-2xl font-bold text-gray-900 dark:text-white uppercase">{analytics.active_leads}</p>
+                            <p className="text-2xl font-bold text-gray-900 dark:text-white uppercase">{dashboardStats.active_leads}</p>
                         </div>
                     </div>
                 </div>

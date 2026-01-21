@@ -8,9 +8,11 @@ export const AppProvider = ({ children }) => {
     const [leads, setLeads] = useState([]);
     const [conversations, setConversations] = useState([]);
     const [templates, setTemplates] = useState([]);
-    const [analytics, setAnalytics] = useState(null);
+    const [dashboardStats, setDashboardStats] = useState(null);
+    const [timeSeriesAnalytics, setTimeSeriesAnalytics] = useState([]);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [loading, setLoading] = useState(true);
+
 
     const [theme, setTheme] = useState(() => {
         if (typeof window !== 'undefined') {
@@ -33,17 +35,19 @@ export const AppProvider = ({ children }) => {
     const fetchInitialData = useCallback(async () => {
         try {
             setLoading(true);
-            const [leadsData, conversationsData, templatesData, statsData] = await Promise.all([
+            const [leadsData, conversationsData, templatesData, statsData, analyticsData] = await Promise.all([
                 api.getLeads(),
                 api.getConversations(),
                 api.getTemplates(),
-                api.getDashboardStats()
+                api.getDashboardStats(),
+                api.getAnalytics()
             ]);
 
             setLeads(leadsData || []);
             setConversations(conversationsData || []);
             setTemplates(templatesData || []);
-            setAnalytics(statsData);
+            setDashboardStats(statsData);
+            setTimeSeriesAnalytics(analyticsData || []);
         } catch (error) {
             console.error('Failed to fetch initial data:', error);
         } finally {
@@ -80,18 +84,22 @@ export const AppProvider = ({ children }) => {
         setLeads([]);
         setConversations([]);
         setTemplates([]);
-        setAnalytics(null);
+        setDashboardStats(null);
+        setTimeSeriesAnalytics([]);
     };
+
+
 
     const value = {
         user, setUser,
         leads, setLeads,
         conversations, setConversations,
         templates, setTemplates,
-        analytics, setAnalytics,
+        dashboardStats, setDashboardStats,
+        timeSeriesAnalytics, setTimeSeriesAnalytics,
         theme, toggleTheme,
         isLoggedIn, login, logout,
-        loading, fetchInitialData
+        loading, fetchInitialData,
     };
 
     return (

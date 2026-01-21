@@ -112,9 +112,6 @@ const Settings = () => {
                     {[
                         { name: 'General', icon: Users },
                         { name: 'Integrations', icon: Plug },
-                        { name: 'Security', icon: Shield },
-                        { name: 'Notifications', icon: Bell },
-                        { name: 'API Keys', icon: Key },
                     ].map((item) => (
                         <button
                             key={item.name}
