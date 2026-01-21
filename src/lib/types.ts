@@ -281,7 +281,6 @@ export interface WhatsAppIntegrationCreate {
     verify_token: string;
     app_secret: string;
     phone_number_id: string;
-    business_account_id: string;
 }
 
 export interface WhatsAppIntegrationUpdate {
@@ -295,7 +294,6 @@ export interface WhatsAppIntegrationOut {
     id: string;
     organization_id: string;
     phone_number_id: string;
-    business_account_id: string;
     is_connected: boolean;
     created_at: string;
     updated_at?: string;

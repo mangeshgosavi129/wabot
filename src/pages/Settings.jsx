@@ -28,7 +28,6 @@ const Settings = () => {
     verify_token: '',
     app_secret: '',
     phone_number_id: '',
-    business_account_id: '',
   });
 
   useEffect(() => {
@@ -42,7 +41,6 @@ const Settings = () => {
           setConfig((prev) => ({
             ...prev,
             phone_number_id: res.phone_number_id,
-            business_account_id: res.business_account_id,
             access_token: '••••••••••••••••', // Masked
           }));
         }
@@ -109,7 +107,6 @@ const Settings = () => {
         verify_token: '',
         app_secret: '',
         phone_number_id: '',
-        business_account_id: '',
       });
     } catch (error) {
       alert('Failed to disconnect');
@@ -226,14 +223,6 @@ const Settings = () => {
                         handleChange('phone_number_id', e.target.value)
                       }
                       placeholder="Enter Phone Number ID"
-                    />
-                    <Input
-                      label="Business Account ID"
-                      value={config.business_account_id}
-                      onChange={(e) =>
-                        handleChange('business_account_id', e.target.value)
-                      }
-                      placeholder="Enter Business Account ID"
                     />
                   </div>
 
