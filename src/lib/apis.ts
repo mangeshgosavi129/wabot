@@ -217,8 +217,8 @@ class ApiClient {
     }
 
     // Analytics
-    async getAnalytics(): Promise<AnalyticsOut[]> {
-        return this.request<AnalyticsOut[]>('/analytics');
+    async getAnalytics(): Promise<AnalyticsReportOut> {
+        return this.request<AnalyticsReportOut>('/analytics');
     }
 
     async getAnalyticsReport(): Promise<AnalyticsReportOut> {

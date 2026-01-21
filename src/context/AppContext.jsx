@@ -9,7 +9,7 @@ export const AppProvider = ({ children }) => {
     const [conversations, setConversations] = useState([]);
     const [templates, setTemplates] = useState([]);
     const [dashboardStats, setDashboardStats] = useState(null);
-    const [timeSeriesAnalytics, setTimeSeriesAnalytics] = useState([]);
+    const [analyticsReport, setAnalyticsReport] = useState(null);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [loading, setLoading] = useState(true);
     const [authLoading, setAuthLoading] = useState(true);
@@ -48,7 +48,7 @@ export const AppProvider = ({ children }) => {
             setConversations(conversationsData || []);
             setTemplates(templatesData || []);
             setDashboardStats(statsData);
-            setTimeSeriesAnalytics(analyticsData || []);
+            setAnalyticsReport(analyticsData || null);
         } catch (error) {
             console.error('Failed to fetch initial data:', error);
         } finally {
@@ -128,7 +128,7 @@ export const AppProvider = ({ children }) => {
         conversations, setConversations,
         templates, setTemplates,
         dashboardStats, setDashboardStats,
-        timeSeriesAnalytics, setTimeSeriesAnalytics,
+        analyticsReport, setAnalyticsReport,
         theme, toggleTheme,
         isLoggedIn, login, signupCreateOrg, signupJoinOrg, logout,
         loading, authLoading, fetchInitialData,

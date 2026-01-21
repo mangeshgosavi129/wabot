@@ -6,7 +6,7 @@ import { Button } from '../components/ui/Button';
 import { useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
-    const { dashboardStats, user, loading } = useApp();
+    const { dashboardStats, analyticsReport, user, loading } = useApp();
     const navigate = useNavigate();
 
     if (loading || !dashboardStats) {
@@ -16,6 +16,10 @@ const Dashboard = () => {
             </div>
         );
     }
+
+    // Use sentiment from analytics report if available, else fallback to dashboard (which is likely empty)
+    const sentimentBreakdown = analyticsReport?.sentiment_breakdown || dashboardStats.sentiment_breakdown || {};
+    const hasSentimentData = Object.keys(sentimentBreakdown).length > 0;
 
     return (
         <div className="space-y-8 animate-fade-in">
@@ -71,7 +75,7 @@ const Dashboard = () => {
                         <Button variant="link" size="sm" onClick={() => navigate('/analytics')}>Details</Button>
                     </div>
                     <div className="space-y-4">
-                        {Object.entries(dashboardStats.sentiment_breakdown || {}).map(([sentiment, count]) => (
+                        {hasSentimentData ? Object.entries(sentimentBreakdown).map(([sentiment, count]) => (
                             <div key={sentiment}>
                                 <div className="flex justify-between text-sm mb-1">
                                     <span className="text-gray-700 dark:text-gray-300 font-medium capitalize">{sentiment}</span>
@@ -84,8 +88,7 @@ const Dashboard = () => {
                                     ></div>
                                 </div>
                             </div>
-                        ))}
-                        {!Object.keys(dashboardStats.sentiment_breakdown || {}).length && (
+                        )) : (
                             <p className="text-gray-500 dark:text-gray-400 text-center py-4">No sentiment data available.</p>
                         )}
                     </div>
