@@ -48,6 +48,14 @@ class ApiClient {
             },
         });
 
+        if (response.status === 401) {
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('user_email');
+            // We can't easily trigger a navigation from here without a circular dependency or event bus
+            // But throwing an error will let the caller handle it.
+            throw new Error('Unauthorized');
+        }
+
         if (!response.ok) {
             const error = await response.json().catch(() => ({ detail: 'Unknown error' }));
             throw new Error(error.detail || 'Request failed');
