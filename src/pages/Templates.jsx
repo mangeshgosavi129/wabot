@@ -8,7 +8,7 @@ import Modal from '../components/ui/Modal';
 import { TemplateStatus } from '../lib/types';
 
 const Templates = () => {
-    const { templates, loading } = useApp();
+    const { templates } = useApp();
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [newTemplate, setNewTemplate] = useState({ name: '', content: '' });
     const [creating, setCreating] = useState(false);

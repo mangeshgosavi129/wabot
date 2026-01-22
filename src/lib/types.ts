@@ -42,6 +42,8 @@ export enum UserSentiment {
 
 export enum TemplateStatus {
     PENDING = "pending",
+    DRAFT = "draft",
+    SUBMITTED = "submitted",
     APPROVED = "approved",
     REJECTED = "rejected",
 }
@@ -146,6 +148,7 @@ export interface ConversationOut {
     organization_id: string;
     lead_id?: string;
     cta_id?: string;
+    cta_scheduled_at?: string;
     stage: ConversationStage;
     intent_level?: IntentLevel;
     mode: ConversationMode;
@@ -181,13 +184,11 @@ export interface MessageOut {
 export interface CTACreate {
     name: string;
     cta_type: CTAType;
-    scheduled_at?: string;
 }
 
 export interface CTAUpdate {
     name?: string;
     is_active?: boolean;
-    scheduled_at?: string;
 }
 
 export interface CTAOut {
@@ -288,6 +289,7 @@ export interface WhatsAppIntegrationUpdate {
     version?: string;
     verify_token?: string;
     app_secret?: string;
+    phone_number_id?: string;
 }
 
 export interface WhatsAppIntegrationOut {
@@ -297,6 +299,10 @@ export interface WhatsAppIntegrationOut {
     is_connected: boolean;
     created_at: string;
     updated_at?: string;
+}
+
+export interface WhatsAppStatusOut {
+    is_connected: boolean;
 }
 
 export interface WebSocketEnvelope {

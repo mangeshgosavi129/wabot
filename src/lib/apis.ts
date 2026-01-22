@@ -25,6 +25,7 @@ import {
     WhatsAppIntegrationOut,
     WhatsAppIntegrationCreate,
     WhatsAppIntegrationUpdate,
+    WhatsAppStatusOut,
     WSConversationUpdated,
     SuccessResponse
 } from './types';
@@ -256,13 +257,13 @@ class ApiClient {
         });
     }
 
-    async getWhatsAppStatus(): Promise<WhatsAppIntegrationOut> {
-        return this.request<WhatsAppIntegrationOut>('/settings/whatsapp/status');
+    async getWhatsAppStatus(): Promise<WhatsAppStatusOut> {
+        return this.request<WhatsAppStatusOut>('/settings/whatsapp/status');
     }
 
     async updateWhatsAppConfig(payload: WhatsAppIntegrationUpdate): Promise<WhatsAppIntegrationOut> {
-        return this.request<WhatsAppIntegrationOut>('/settings/whatsapp/config', {
-            method: 'PUT',
+        return this.request<WhatsAppIntegrationOut>('/settings/whatsapp/update', {
+            method: 'PATCH',
             body: JSON.stringify(payload),
         });
     }

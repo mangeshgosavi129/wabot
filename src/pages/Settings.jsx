@@ -7,7 +7,7 @@ import { api } from '../lib/apis';
 import { useApp } from '../context/AppContext';
 
 const Settings = () => {
-  const { user } = useApp();
+  const { user, organization } = useApp();
   const [activeTab, setActiveTab] = useState('General');
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -15,10 +15,10 @@ const Settings = () => {
 
   const [status, setStatus] = useState(null);
 
-  // ✅ Organization form state
+  // Organization form state - using data from AppContext
   const [org, setOrg] = useState({
-    name: '',
-    id: '',
+    name: organization?.name || '',
+    id: organization?.id || '',
   });
 
   // Form State for WhatsApp Cloud API
@@ -31,29 +31,24 @@ const Settings = () => {
   });
 
   useEffect(() => {
+    // Update org state when organization data from AppContext changes
+    if (organization) {
+      setOrg({
+        name: organization.name || '',
+        id: organization.id || '',
+      });
+    }
+  }, [organization]);
+
+  useEffect(() => {
     const fetchSettings = async () => {
       try {
-        // ✅ Fetch WhatsApp status
-        const res = await api.getWhatsAppStatus();
-        setStatus(res);
+        // Fetch WhatsApp status (only is_connected)
+        const statusRes = await api.getWhatsAppStatus();
+        setStatus(statusRes);
 
-        if (res) {
-          setConfig((prev) => ({
-            ...prev,
-            phone_number_id: res.phone_number_id,
-            access_token: '••••••••••••••••', // Masked
-          }));
-        }
-
-        // ✅ Fetch Organization details
-        if (user?.organization_id) {
-          try {
-            const orgRes = await api.getOrganization();
-            if (orgRes) setOrg(orgRes);
-          } catch (err) {
-            console.warn('Org details API failed:', err);
-          }
-        }
+        // Don't set phone_number_id from status since it's no longer included
+        // The form will remain empty until user connects or we fetch full config
       } catch (error) {
         console.error('Failed to fetch settings:', error);
       } finally {
@@ -74,21 +69,21 @@ const Settings = () => {
   const handleSaveWhatsApp = async () => {
     setIsSaving(true);
     try {
-      if (status) {
+      if (status?.is_connected) {
         await api.updateWhatsAppConfig(config);
       } else {
-        const res = await api.connectWhatsApp(config);
-        setStatus(res);
+        await api.connectWhatsApp(config);
+        // Set status to connected after successful connection
+        setStatus({ is_connected: true });
       }
       showSuccessToast();
     } catch (error) {
+      console.error('Failed to save WhatsApp configuration:', error);
       alert('Failed to save WhatsApp configuration');
     } finally {
       setIsSaving(false);
     }
   };
-
-
 
   const handleChange = (field, value) => {
     setConfig((prev) => ({ ...prev, [field]: value }));
@@ -109,6 +104,7 @@ const Settings = () => {
         phone_number_id: '',
       });
     } catch (error) {
+      console.error('Failed to disconnect:', error);
       alert('Failed to disconnect');
     }
   };

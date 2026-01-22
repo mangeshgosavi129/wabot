@@ -1,20 +1,21 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { api } from '../lib/apis';
 import { wsClient } from '../lib/websocket';
+import { wsHandlerManager } from '../lib/websocket-handlers';
 import { WSEvents } from '../lib/types';
 
 const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
     const [user, setUser] = useState(null);
-    const [leads, setLeads] = useState([]);
-    const [conversations, setConversations] = useState([]);
     const [templates, setTemplates] = useState([]);
     const [dashboardStats, setDashboardStats] = useState(null);
     const [analyticsReport, setAnalyticsReport] = useState(null);
+    const [organization, setOrganization] = useState(null);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [loading, setLoading] = useState(true);
     const [authLoading, setAuthLoading] = useState(true);
+    const [initialDataLoaded, setInitialDataLoaded] = useState(false);
 
 
     const [theme, setTheme] = useState(() => {
@@ -38,21 +39,21 @@ export const AppProvider = ({ children }) => {
     const fetchInitialData = useCallback(async (showLoading = true) => {
         try {
             if (showLoading) setLoading(true);
-            const [leadsData, conversationsData, templatesData, statsData, analyticsData] = await Promise.all([
-                api.getLeads(),
-                api.getConversations(),
+            const [templatesData, statsData, analyticsData, orgData] = await Promise.all([
                 api.getTemplates(),
                 api.getDashboardStats(),
-                api.getAnalytics()
+                api.getAnalytics(),
+                api.getOrganization(),
             ]);
 
-            setLeads(leadsData || []);
-            setConversations(conversationsData || []);
             setTemplates(templatesData || []);
             setDashboardStats(statsData);
             setAnalyticsReport(analyticsData || null);
+            setOrganization(orgData || null);
+            setInitialDataLoaded(true);
         } catch (error) {
             console.error('Failed to fetch initial data:', error);
+            setInitialDataLoaded(true); // Mark as loaded even on error to prevent infinite loading
         } finally {
             if (showLoading) setLoading(false);
         }
@@ -75,38 +76,38 @@ export const AppProvider = ({ children }) => {
         if (!isLoggedIn) return;
 
         const handleConversationUpdated = (payload) => {
-            const updatedConv = payload.conversation;
-            setConversations(prev => {
-                const exists = prev.find(c => c.id === updatedConv.id);
-                if (exists) {
-                    return prev.map(c => c.id === updatedConv.id ? updatedConv : c);
-                } else {
-                    return [updatedConv, ...prev];
-                }
-            });
+            console.log("Conversation updated:", payload);
+            // Conversations are now managed locally by pages
         };
 
-        // Example: human attention required logic
         const handleHumanAttention = (payload) => {
-            // Logic to show toast or update specific state
             console.log("Human attention required for:", payload.conversation_ids);
         };
 
-        const handleReconnect = () => {
-            console.log("WebSocket connected/reconnected. Refreshing data...");
-            fetchInitialData(false); // Silent refresh
+        const handleAck = (payload) => {
+            console.log("Acknowledgment received for:", payload.event);
         };
 
-        wsClient.on(WSEvents.CONVERSATION_UPDATED, handleConversationUpdated);
-        wsClient.on(WSEvents.ACTION_HUMAN_ATTENTION_REQUIRED, handleHumanAttention);
-        wsClient.on('connection:open', handleReconnect);
+        const handleError = (payload) => {
+            console.error("WebSocket error:", payload.message);
+        };
+
+        const handleServerHello = (payload) => {
+            console.log("Server handshake received:", payload);
+        };
+
+        wsHandlerManager.registerHandlers({
+            onConversationUpdated: handleConversationUpdated,
+            onActionHumanAttentionRequired: handleHumanAttention,
+            onAck: handleAck,
+            onError: handleError,
+            onServerHello: handleServerHello,
+        });
 
         return () => {
-            wsClient.off(WSEvents.CONVERSATION_UPDATED, handleConversationUpdated);
-            wsClient.off(WSEvents.ACTION_HUMAN_ATTENTION_REQUIRED, handleHumanAttention);
-            wsClient.off('connection:open', handleReconnect);
+            wsHandlerManager.unregisterAllHandlers();
         };
-    }, [isLoggedIn, fetchInitialData]);
+    }, [isLoggedIn, initialDataLoaded]);
 
     useEffect(() => {
         const checkAuth = async () => {
@@ -162,28 +163,27 @@ export const AppProvider = ({ children }) => {
     const logout = () => {
         localStorage.removeItem('auth_token');
 
-
         setIsLoggedIn(false);
         setUser(null);
-        setLeads([]);
-        setConversations([]);
         setTemplates([]);
         setDashboardStats(null);
-        setTimeSeriesAnalytics([]);
+        setAnalyticsReport(null);
+        setOrganization(null);
+        setInitialDataLoaded(false);
+        setLoading(false);
     };
 
 
 
     const value = {
         user, setUser,
-        leads, setLeads,
-        conversations, setConversations,
         templates, setTemplates,
         dashboardStats, setDashboardStats,
         analyticsReport, setAnalyticsReport,
+        organization, setOrganization,
         theme, toggleTheme,
         isLoggedIn, login, signupCreateOrg, signupJoinOrg, logout,
-        loading, authLoading, fetchInitialData,
+        loading, authLoading, initialDataLoaded, fetchInitialData,
     };
 
     return (

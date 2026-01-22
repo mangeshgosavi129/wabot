@@ -6,10 +6,11 @@ import { Button } from '../components/ui/Button';
 import { useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
-    const { dashboardStats, analyticsReport, user, loading } = useApp();
+    const { dashboardStats, analyticsReport, initialDataLoaded } = useApp();
     const navigate = useNavigate();
 
-    if (loading || !dashboardStats) {
+    // Show loading only while initial data is being fetched
+    if (!initialDataLoaded) {
         return (
             <div className="flex items-center justify-center h-full">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>

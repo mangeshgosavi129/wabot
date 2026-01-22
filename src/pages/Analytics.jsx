@@ -4,9 +4,10 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { TrendingUp, MessageCircle, PieChart as PieChartIcon, Loader2, Gauge, Users } from 'lucide-react';
 
 const Analytics = () => {
-    const { dashboardStats, analyticsReport, loading } = useApp();
+    const { dashboardStats, analyticsReport, initialDataLoaded } = useApp();
 
-    if (loading || !dashboardStats || !analyticsReport) {
+    // Show loading only while initial data is being fetched
+    if (!initialDataLoaded) {
         return (
             <div className="flex items-center justify-center h-full">
                 <Loader2 className="w-12 h-12 animate-spin text-primary" />

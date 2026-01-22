@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { useApp } from '../context/AppContext';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CheckCircle, Clock, CreditCard, ArrowRight, AlertCircle, Search } from 'lucide-react';
 import { Button } from '../components/ui/Button';
@@ -8,7 +7,6 @@ import { ConversationStage } from '../lib/types';
 import { api } from '../lib/apis';
 
 const Actions = () => {
-    const { leads, loading } = useApp();
     const navigate = useNavigate();
 
     const [activeTab, setActiveTab] = useState('tasks'); // 'tasks' | 'definitions'
@@ -18,7 +16,7 @@ const Actions = () => {
     const [loadingCtas, setLoadingCtas] = useState(false);
 
     // Fetch CTAs when tab changes to definitions
-    React.useEffect(() => {
+    useEffect(() => {
         if (activeTab === 'definitions') {
             fetchCtas();
         }
@@ -43,6 +41,7 @@ const Actions = () => {
             setCtaForm({ name: '', cta_type: 'book_call' });
             fetchCtas();
         } catch (error) {
+            console.error('Failed to create CTA:', error);
             alert('Failed to create CTA');
         }
     };
@@ -53,21 +52,13 @@ const Actions = () => {
             await api.deleteCTA(id);
             fetchCtas();
         } catch (error) {
+            console.error('Failed to delete CTA:', error);
             alert('Failed to delete CTA');
         }
     };
 
-    // Define actionable stages based on ConversationStage enum
-    const actionableStages = [
-        ConversationStage.PRICING,
-        ConversationStage.CTA,
-        ConversationStage.FOLLOWUP
-    ];
-
-    // Filter leads requiring action
-    const actionableLeads = (leads || []).filter(lead =>
-        actionableStages.includes(lead.conversation_stage)
-    );
+    // Since we don't have leads data, show a placeholder for tasks
+    const actionableLeads = [];
 
     const getActionConfig = (stage) => {
         switch (stage) {
@@ -102,13 +93,6 @@ const Actions = () => {
         }
     };
 
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center h-full">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-            </div>
-        );
-    }
 
     return (
         <div className="space-y-8 animate-fade-in pb-8">

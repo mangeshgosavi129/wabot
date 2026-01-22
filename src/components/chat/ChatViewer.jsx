@@ -2,8 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Send, FileText, Smile, Paperclip, Lock, Loader2 } from 'lucide-react';
 import { Button } from '../ui/Button';
 import MessageBubble from './MessageBubble';
+import { wsSender } from '../../lib/websocket-sender';
 
-const ChatViewer = ({ conversation, isLoading, onSendMessage, onToggleBot }) => {
+const ChatViewer = ({ conversation, isLoading, onSendMessage }) => {
     const messagesEndRef = useRef(null);
     const [input, setInput] = useState('');
 
@@ -17,6 +18,16 @@ const ChatViewer = ({ conversation, isLoading, onSendMessage, onToggleBot }) => 
         if (!input.trim()) return;
         onSendMessage(input);
         setInput('');
+    };
+
+    const handleToggleBot = () => {
+        if (!conversation?.id) return;
+        
+        if (conversation.mode === 'bot') {
+            wsSender.sendTakeoverStarted(conversation.id);
+        } else {
+            wsSender.sendTakeoverEnded(conversation.id);
+        }
     };
 
     return (
@@ -46,19 +57,19 @@ const ChatViewer = ({ conversation, isLoading, onSendMessage, onToggleBot }) => 
                 {/* Status Bar */}
                 <div className="flex items-center justify-between mb-3 px-1">
                     <div className="flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-full ${conversation?.botActive ? 'bg-cyan-500' : 'bg-gray-400'}`}></div>
+                        <div className={`w-2 h-2 rounded-full ${conversation?.mode === 'bot' ? 'bg-cyan-500' : 'bg-gray-400'}`}></div>
                         <span className="text-xs font-medium text-gray-600 dark:text-gray-300">
-                            {conversation?.botActive ? 'Bot Active' : 'Human Takeover Active'}
+                            {conversation?.mode === 'bot' ? 'Bot Active' : 'Human Takeover Active'}
                         </span>
                     </div>
 
                     <Button
-                        variant={conversation?.botActive ? "outline" : "default"}
+                        variant={conversation?.mode === 'bot' ? "outline" : "default"}
                         size="sm"
-                        onClick={onToggleBot}
-                        className={conversation?.botActive ? "text-gray-600 dark:text-gray-300 dark:border-gray-600" : "bg-accent hover:bg-accent/90 text-white border-none"}
+                        onClick={handleToggleBot}
+                        className={conversation?.mode === 'bot' ? "text-gray-600 dark:text-gray-300 dark:border-gray-600" : "bg-accent hover:bg-accent/90 text-white border-none"}
                     >
-                        {conversation?.botActive ? 'Takeover' : 'Resume Bot'}
+                        {conversation?.mode === 'bot' ? 'Takeover' : 'Resume Bot'}
                     </Button>
                 </div>
 
@@ -82,8 +93,8 @@ const ChatViewer = ({ conversation, isLoading, onSendMessage, onToggleBot }) => 
                                 handleSend();
                             }
                         }}
-                        disabled={conversation?.botActive}
-                        placeholder={conversation?.botActive ? "Bot is active. Takeover to chat." : "Type a message..."}
+                        disabled={conversation?.mode === 'bot'}
+                        placeholder={conversation?.mode === 'bot' ? "Bot is active. Takeover to chat." : "Type a message..."}
                         className="flex-1 max-h-32 bg-transparent border-none focus:ring-0 p-2 text-sm resize-none disabled:opacity-50 text-gray-900 dark:text-white placeholder-gray-400"
                         rows={1}
                     />
@@ -91,13 +102,13 @@ const ChatViewer = ({ conversation, isLoading, onSendMessage, onToggleBot }) => 
                     <Button
                         className="rounded-lg h-9 w-9 p-0"
                         onClick={handleSend}
-                        disabled={!input.trim() || conversation?.botActive}
+                        disabled={!input.trim() || conversation?.mode === 'bot'}
                     >
                         <Send className="w-4 h-4" />
                     </Button>
                 </div>
 
-                {conversation?.botActive && (
+                {conversation?.mode === 'bot' && (
                     <p className="text-xs text-center text-gray-400 mt-2 flex items-center justify-center gap-1">
                         <Lock className="w-3 h-3" /> Bot is handling the conversation. Toggle takeover to intervene.
                     </p>
