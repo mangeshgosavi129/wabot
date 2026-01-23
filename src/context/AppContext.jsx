@@ -36,20 +36,24 @@ export const AppProvider = ({ children }) => {
         }
     };
 
+    const [conversations, setConversations] = useState([]);
+
     const fetchInitialData = useCallback(async (showLoading = true) => {
         try {
             if (showLoading) setLoading(true);
-            const [templatesData, statsData, analyticsData, orgData] = await Promise.all([
+            const [templatesData, statsData, analyticsData, orgData, conversationsData] = await Promise.all([
                 api.getTemplates(),
                 api.getDashboardStats(),
                 api.getAnalytics(),
                 api.getOrganization(),
+                api.getConversations(),
             ]);
 
             setTemplates(templatesData || []);
             setDashboardStats(statsData);
             setAnalyticsReport(analyticsData || null);
             setOrganization(orgData || null);
+            setConversations(conversationsData || []);
             setInitialDataLoaded(true);
         } catch (error) {
             console.error('Failed to fetch initial data:', error);
@@ -64,9 +68,13 @@ export const AppProvider = ({ children }) => {
         if (isLoggedIn) {
             const token = localStorage.getItem('auth_token');
             if (token) {
+                console.log('[AppContext] Initiating WebSocket connect with token present');
                 wsClient.connect(token);
+            } else {
+                console.warn('[AppContext] No auth_token found in localStorage; skipping WebSocket connect');
             }
         } else {
+            console.log('[AppContext] isLoggedIn=false -> disconnecting WebSocket');
             wsClient.disconnect();
         }
     }, [isLoggedIn]);
@@ -76,8 +84,16 @@ export const AppProvider = ({ children }) => {
         if (!isLoggedIn) return;
 
         const handleConversationUpdated = (payload) => {
-            console.log("Conversation updated:", payload);
-            // Conversations are now managed locally by pages
+            console.log('🔄 Conversation updated handler called:', payload);
+            if (!payload?.conversation) return;
+
+            setConversations(prev => {
+                const existing = (prev || []).find(c => c.id === payload.conversation.id);
+                if (existing) {
+                    return prev.map(c => c.id === payload.conversation.id ? { ...c, ...payload.conversation } : c);
+                }
+                return [...(prev || []), payload.conversation];
+            });
         };
 
         const handleHumanAttention = (payload) => {
@@ -96,6 +112,13 @@ export const AppProvider = ({ children }) => {
             console.log("Server handshake received:", payload);
         };
 
+        // Tap into connection lifecycle for debugging
+        const logOpen = () => console.log('[AppContext] WebSocket connection: open');
+        const logClose = () => console.log('[AppContext] WebSocket connection: close');
+        wsClient.on('connection:open', logOpen);
+        wsClient.on('connection:close', logClose);
+
+        // Register primary handlers
         wsHandlerManager.registerHandlers({
             onConversationUpdated: handleConversationUpdated,
             onActionHumanAttentionRequired: handleHumanAttention,
@@ -105,6 +128,8 @@ export const AppProvider = ({ children }) => {
         });
 
         return () => {
+            wsClient.off('connection:open', logOpen);
+            wsClient.off('connection:close', logClose);
             wsHandlerManager.unregisterAllHandlers();
         };
     }, [isLoggedIn, initialDataLoaded]);
@@ -184,6 +209,7 @@ export const AppProvider = ({ children }) => {
         theme, toggleTheme,
         isLoggedIn, login, signupCreateOrg, signupJoinOrg, logout,
         loading, authLoading, initialDataLoaded, fetchInitialData,
+        conversations, setConversations,
     };
 
     return (

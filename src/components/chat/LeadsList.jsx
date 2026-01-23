@@ -6,7 +6,13 @@ import { ConversationStage, IntentLevel } from '../../lib/types';
 const LeadsList = ({ leads, conversations, selectedId, onSelect }) => {
     const [search, setSearch] = useState('');
 
-    const filteredLeads = (leads || []).filter(l =>
+    // Only show leads that have conversations
+    const leadsWithConversations = (leads || []).filter(lead => {
+        const hasConversation = (conversations || []).some(c => c.lead_id === lead.id);
+        return hasConversation;
+    });
+
+    const filteredLeads = leadsWithConversations.filter(l =>
         (l.name || '').toLowerCase().includes(search.toLowerCase()) ||
         (l.phone || '').includes(search)
     );
@@ -14,7 +20,7 @@ const LeadsList = ({ leads, conversations, selectedId, onSelect }) => {
     const getLeadConversation = (leadId) => {
         return (conversations || []).find(c => c.lead_id === leadId);
     };
-
+    
     return (
         <div className="flex flex-col h-full border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 w-80 transition-colors">
             <div className="p-4 border-b border-gray-100 dark:border-gray-700 space-y-3">
@@ -36,7 +42,10 @@ const LeadsList = ({ leads, conversations, selectedId, onSelect }) => {
                     return (
                         <div
                             key={lead.id}
-                            onClick={() => onSelect(lead.id)}
+                            onClick={() => {
+                                console.log('LeadsList - clicked lead:', { id: lead.id, name: lead.name });
+                                onSelect(lead.id);
+                            }}
                             className={`p-4 border-b border-gray-50 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors ${selectedId === lead.id ? 'bg-primary/5 dark:bg-primary/10 border-l-4 border-l-primary' : 'border-l-4 border-l-transparent'
                                 }`}
                         >

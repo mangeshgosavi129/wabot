@@ -310,14 +310,6 @@ export interface WebSocketEnvelope {
     payload: any;
 }
 
-export interface WSMessageReceived {
-    message: MessageOut;
-}
-
-export interface WSMessageSent {
-    message: MessageOut;
-}
-
 export interface AnalyticsReportOut {
     sentiment_breakdown: Record<string, number>;
     peak_activity_time: Record<string, number>;
@@ -328,6 +320,7 @@ export interface AnalyticsReportOut {
 
 export interface WSConversationUpdated {
     conversation: ConversationOut;
+    message?: MessageOut;
 }
 
 export interface WSTakeoverStarted {

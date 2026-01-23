@@ -1,8 +1,8 @@
 import { wsClient } from './websocket';
-import { WSEvents } from './types';
+import { WSEvents, WSConversationUpdated } from './types';
 
 export interface WebSocketHandlers {
-    onConversationUpdated?: (payload: { conversation: any }) => void;
+    onConversationUpdated?: (payload: WSConversationUpdated) => void;
     onActionConversationsFlagged?: (payload: { cta_id: string; conversation_ids: string[] }) => void;
     onActionHumanAttentionRequired?: (payload: { conversation_ids: string[] }) => void;
     onAck?: (payload: { event: string }) => void;
@@ -24,25 +24,32 @@ export class WebSocketHandlerManager {
     }
 
     public registerHandlers(handlers: WebSocketHandlers) {
+        console.log('🔧 Registering WebSocket handlers:', Object.keys(handlers));
         this.unregisterAllHandlers();
         this.handlers = { ...handlers };
 
         if (handlers.onConversationUpdated) {
+            console.log('📝 Registering conversation_updated handler');
             wsClient.on(WSEvents.CONVERSATION_UPDATED, handlers.onConversationUpdated);
         }
         if (handlers.onActionConversationsFlagged) {
+            console.log('📝 Registering action_conversations_flagged handler');
             wsClient.on(WSEvents.ACTION_CONVERSATIONS_FLAGGED, handlers.onActionConversationsFlagged);
         }
         if (handlers.onActionHumanAttentionRequired) {
+            console.log('📝 Registering action_human_attention_required handler');
             wsClient.on(WSEvents.ACTION_HUMAN_ATTENTION_REQUIRED, handlers.onActionHumanAttentionRequired);
         }
         if (handlers.onAck) {
+            console.log('📝 Registering ack handler');
             wsClient.on(WSEvents.ACK, handlers.onAck);
         }
         if (handlers.onError) {
+            console.log('📝 Registering error handler');
             wsClient.on(WSEvents.ERROR, handlers.onError);
         }
         if (handlers.onServerHello) {
+            console.log('📝 Registering server_hello handler');
             wsClient.on(WSEvents.SERVER_HELLO, handlers.onServerHello);
         }
     }

@@ -38,7 +38,7 @@ class WebSocketClient {
         const host = 'localhost:8000'; // TODO: Make configurable
         const url = `${protocol}//${host}/ws?token=${token}`;
 
-        this.log('Connecting to', url);
+        this.log('🔌 Connecting to WebSocket:', url);
         this.socket = new WebSocket(url);
 
         this.socket.onopen = this.handleOpen;
@@ -78,7 +78,7 @@ class WebSocketClient {
     }
 
     private handleOpen = () => {
-        this.log('Connected');
+        this.log('🟢 Connected to WebSocket');
         this.isConnected = true;
         this.reconnectAttempts = 0;
         this.startHeartbeat();
@@ -87,7 +87,7 @@ class WebSocketClient {
     };
 
     private handleClose = (event: CloseEvent) => {
-        this.log('Disconnected', event.code, event.reason);
+        this.log('🔴 Disconnected from WebSocket', event.code, event.reason);
         this.stopHeartbeat();
         this.isConnected = false;
 
@@ -100,28 +100,36 @@ class WebSocketClient {
     };
 
     private handleError = (error: Event) => {
-        this.log('Error', error);
+        this.log('❌ WebSocket error:', error);
     };
 
     private handleMessage = (event: MessageEvent) => {
         try {
             const data = JSON.parse(event.data);
             const { event: eventName, payload } = data;
+            this.log('📨 Received message:', { eventName, payload });
+            
+            // Log the full event data for debugging
+            console.log('🔍 Full WebSocket event data:', data);
+            
             this.emit(eventName, payload);
 
             // Handle server:hello specifically if needed, 
             // though generic emit handles it for registered listeners
             if (eventName === 'server:hello') {
-                this.log('Server handshake received', payload);
+                this.log('🤝 Server handshake received', payload);
             }
         } catch (err) {
-            this.log('Failed to parse message', event.data);
+            this.log('❌ Failed to parse message', event.data);
         }
     };
 
     private emit(event: string, payload: any) {
+        this.log('🚀 Emitting event:', { event, handlerCount: this.handlers.get(event)?.size || 0 });
         if (this.handlers.has(event)) {
             this.handlers.get(event)?.forEach(handler => handler(payload));
+        } else {
+            this.log('⚠️ No handlers registered for event:', event);
         }
     }
 
