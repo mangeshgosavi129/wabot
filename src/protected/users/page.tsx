@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { api } from '../lib/apis';
-import { Button } from '../components/ui/Button';
-import { Input } from '../components/ui/Input';
+import { api } from '../../lib/apis';
+import { Button } from '../../components/ui/Button';
+import { Input } from '../../components/ui/Input';
 import { Search, UserPlus, Mail, Shield, Trash2, Edit2, Copy, Check } from 'lucide-react';
-import { useApp } from '../context/AppContext';
+import { useApp } from '../../context/AppContext';
 
 const Users = () => {
     const { organization } = useApp();

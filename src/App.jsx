@@ -2,19 +2,18 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AppProvider } from './context/AppContext';
 import Layout from './components/Layout';
-import Dashboard from './pages/Dashboard';
-import Actions from './pages/Actions';
-import Onboarding from './pages/Onboarding';
-import Inbox from './pages/Inbox';
-import Templates from './pages/Templates';
-import Leads from './pages/Leads';
-import Analytics from './pages/Analytics';
-import Settings from './pages/Settings';
-import Login from './pages/Login';
-import SignupCreateOrg from './pages/SignupCreateOrg';
-import SignupJoinOrg from './pages/SignupJoinOrg';
+import Dashboard from './protected/dashboard/page';
+import Actions from './protected/actions/page';
+import Inbox from './protected/inbox/page';
+import Templates from './protected/templates/page';
+import Leads from './protected/leads/page';
+import Analytics from './protected/analytics/page';
+import Settings from './protected/settings/page';
+import Login from './auth/login/page';
+import SignupCreateOrg from './auth/signup-create-org/page';
+import SignupJoinOrg from './auth/signup-join-org/page';
 import ProtectedRoute from './components/ProtectedRoute';
-import Users from './pages/Users';
+import Users from './protected/users/page';
 
 function App() {
   return (
@@ -26,12 +25,6 @@ function App() {
         <Route path="/signup/join-org" element={<SignupJoinOrg />} />
 
         {/* Protected Routes */}
-        <Route path="/onboarding" element={
-          <ProtectedRoute>
-            <Onboarding />
-          </ProtectedRoute>
-        } />
-
         <Route path="/" element={
           <ProtectedRoute>
             <Layout />

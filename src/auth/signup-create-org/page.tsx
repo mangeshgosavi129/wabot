@@ -1,26 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, Link, useLocation } from 'react-router-dom';
-import { useApp } from '../context/AppContext';
-import { Mail, Lock, User, Hash, Loader2, AlertCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { useApp } from '../../context/AppContext';
+import { Mail, Lock, User, Building2, Loader2, AlertCircle } from 'lucide-react';
 
-const SignupJoinOrg = () => {
-    const { signupJoinOrg } = useApp();
+const SignupCreateOrg = () => {
+    const { signupCreateOrg } = useApp();
     const navigate = useNavigate();
-    const location = useLocation();
     const [formData, setFormData] = useState({
         name: '',
         email: '',
         password: '',
-        organization_id: ''
+        organization_name: ''
     });
-
-    useEffect(() => {
-        const params = new URLSearchParams(location.search);
-        const orgId = params.get('org_id');
-        if (orgId) {
-            setFormData(prev => ({ ...prev, organization_id: orgId }));
-        }
-    }, [location]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
@@ -30,10 +21,10 @@ const SignupJoinOrg = () => {
         setLoading(true);
 
         try {
-            await signupJoinOrg(formData);
+            await signupCreateOrg(formData);
             navigate('/');
         } catch (err) {
-            setError(err.message || 'Failed to join organization. Please check the Organization ID.');
+            setError(err.message || 'Failed to create organization. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -48,10 +39,10 @@ const SignupJoinOrg = () => {
             <div className="max-w-md w-full space-y-8 bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl">
                 <div>
                     <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
-                        Join Organization
+                        Create Organization
                     </h2>
                     <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
-                        Join your team by entering the organization ID
+                        Start your journey by creating a new organization
                     </p>
                 </div>
 
@@ -64,26 +55,6 @@ const SignupJoinOrg = () => {
 
                 <form className="mt-8 space-y-4" onSubmit={handleSubmit}>
                     <div className="space-y-4">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Organization ID
-                            </label>
-                            <div className="mt-1 relative">
-                                <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
-                                    <Hash className="h-5 w-5" />
-                                </span>
-                                <input
-                                    name="organization_id"
-                                    type="text"
-                                    required
-                                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                                    placeholder="UUID-XXXX-XXXX"
-                                    value={formData.organization_id}
-                                    onChange={handleChange}
-                                />
-                            </div>
-                        </div>
-
                         <div>
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                                 Full Name
@@ -99,6 +70,26 @@ const SignupJoinOrg = () => {
                                     className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                                     placeholder="John Doe"
                                     value={formData.name}
+                                    onChange={handleChange}
+                                />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Organization Name
+                            </label>
+                            <div className="mt-1 relative">
+                                <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                                    <Building2 className="h-5 w-5" />
+                                </span>
+                                <input
+                                    name="organization_name"
+                                    type="text"
+                                    required
+                                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                    placeholder="Acme Inc."
+                                    value={formData.organization_name}
                                     onChange={handleChange}
                                 />
                             </div>
@@ -155,7 +146,7 @@ const SignupJoinOrg = () => {
                             {loading ? (
                                 <Loader2 className="animate-spin h-5 w-5" />
                             ) : (
-                                'Join Organization'
+                                'Create Organization'
                             )}
                         </button>
                     </div>
@@ -168,9 +159,9 @@ const SignupJoinOrg = () => {
                             </Link>
                         </p>
                         <p className="mt-2 text-xs text-gray-500 dark:text-gray-500">
-                            Don't have a team yet?{' '}
-                            <Link to="/signup/create-org" className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 transition-colors duration-200">
-                                Create Organization
+                            Want to join an existing team?{' '}
+                            <Link to="/signup/join-org" className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 transition-colors duration-200">
+                                Join Organization
                             </Link>
                         </p>
                     </div>
@@ -180,4 +171,4 @@ const SignupJoinOrg = () => {
     );
 };
 
-export default SignupJoinOrg;
+export default SignupCreateOrg;
