@@ -1,17 +1,26 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { Mail, Lock, User, Hash, Loader2, AlertCircle } from 'lucide-react';
 
 const SignupJoinOrg = () => {
     const { signupJoinOrg } = useApp();
     const navigate = useNavigate();
+    const location = useLocation();
     const [formData, setFormData] = useState({
         name: '',
         email: '',
         password: '',
         organization_id: ''
     });
+
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const orgId = params.get('org_id');
+        if (orgId) {
+            setFormData(prev => ({ ...prev, organization_id: orgId }));
+        }
+    }, [location]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 

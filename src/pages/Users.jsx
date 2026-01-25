@@ -2,12 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../lib/apis';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
-import { Search, UserPlus, Mail, Shield, Trash2, Edit2 } from 'lucide-react';
+import { Search, UserPlus, Mail, Shield, Trash2, Edit2, Copy, Check } from 'lucide-react';
+import { useApp } from '../context/AppContext';
 
 const Users = () => {
+    const { organization } = useApp();
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
+    const [copied, setCopied] = useState(false);
 
     useEffect(() => {
         fetchUsers();
@@ -37,6 +40,18 @@ const Users = () => {
         }
     };
 
+    const handleInvite = () => {
+        if (!organization?.id) return;
+
+        const baseUrl = window.location.origin;
+        const inviteUrl = `${baseUrl}/signup/join-org?org_id=${organization.id}`;
+
+        navigator.clipboard.writeText(inviteUrl).then(() => {
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        });
+    };
+
     const filteredUsers = (users || []).filter(u =>
         (u.name || '').toLowerCase().includes(search.toLowerCase()) ||
         (u.email || '').toLowerCase().includes(search.toLowerCase())
@@ -57,7 +72,17 @@ const Users = () => {
                     <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Organization Users</h1>
                     <p className="text-gray-500 dark:text-gray-400 mt-1">Manage team members and their access.</p>
                 </div>
-                <Button><UserPlus className="w-4 h-4 mr-2" /> Invite User</Button>
+                <Button
+                    onClick={handleInvite}
+                    className={copied ? "bg-green-600 hover:bg-green-700" : ""}
+                >
+                    {copied ? (
+                        <Check className="w-4 h-4 mr-2" />
+                    ) : (
+                        <UserPlus className="w-4 h-4 mr-2" />
+                    )}
+                    {copied ? "Link Copied!" : "Invite User"}
+                </Button>
             </div>
 
             {/* Top Controls */}
@@ -104,8 +129,8 @@ const Users = () => {
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${user.is_active
-                                                    ? 'bg-green-50 text-green-700 border-green-100'
-                                                    : 'bg-red-50 text-red-700 border-red-100'
+                                                ? 'bg-green-50 text-green-700 border-green-100'
+                                                : 'bg-red-50 text-red-700 border-red-100'
                                                 }`}>
                                                 {user.is_active ? 'Active' : 'Inactive'}
                                             </span>

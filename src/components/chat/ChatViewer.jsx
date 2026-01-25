@@ -22,7 +22,7 @@ const ChatViewer = ({ conversation, isLoading, onSendMessage }) => {
 
     const handleToggleBot = () => {
         if (!conversation?.id) return;
-        
+
         if (conversation.mode === 'bot') {
             wsSender.sendTakeoverStarted(conversation.id);
         } else {
@@ -74,15 +74,7 @@ const ChatViewer = ({ conversation, isLoading, onSendMessage }) => {
                 </div>
 
                 <div className="relative flex items-end gap-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl p-2 focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent transition-all">
-                    <button className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
-                        <Smile className="w-5 h-5" />
-                    </button>
-                    <button className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
-                        <Paperclip className="w-5 h-5" />
-                    </button>
-                    <button className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
-                        <FileText className="w-5 h-5" />
-                    </button>
+
 
                     <textarea
                         value={input}

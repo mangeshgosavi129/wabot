@@ -117,7 +117,7 @@ class ApiClient {
 
     async updateLead(leadId: string, payload: LeadUpdate): Promise<LeadOut> {
         return this.request<LeadOut>(`/leads/${leadId}`, {
-            method: 'PUT',
+            method: 'PATCH',
             body: JSON.stringify(payload),
         });
     }
@@ -151,7 +151,7 @@ class ApiClient {
 
     // Messages
     async sendMessage(payload: MessageCreate): Promise<MessageOut> {
-        return this.request<MessageOut>('/messages/send', {
+        return this.request<MessageOut>('/messages/send_human', {
             method: 'POST',
             body: JSON.stringify(payload),
         });
@@ -259,6 +259,10 @@ class ApiClient {
 
     async getWhatsAppStatus(): Promise<WhatsAppStatusOut> {
         return this.request<WhatsAppStatusOut>('/settings/whatsapp/status');
+    }
+
+    async getWhatsAppConfig(): Promise<WhatsAppIntegrationOut> {
+        return this.request<WhatsAppIntegrationOut>('/settings/whatsapp/config');
     }
 
     async updateWhatsAppConfig(payload: WhatsAppIntegrationUpdate): Promise<WhatsAppIntegrationOut> {

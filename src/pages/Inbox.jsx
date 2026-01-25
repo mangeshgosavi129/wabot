@@ -15,10 +15,11 @@ const Inbox = () => {
     const [selectedLeadId, setSelectedLeadId] = useState(null);
     const [messages, setMessages] = useState([]);
     const [isLoadingMessages, setIsLoadingMessages] = useState(false);
-    
+
     // Refs to avoid re-mounting WebSocket handlers
     const selectedConversationRef = useRef(null);
-    const fetchMessagesRef = useRef(null);
+    const fetchMessagesRef = useRef(null);
+
 
     // Fetch leads on component mount
     useEffect(() => {
@@ -39,15 +40,10 @@ const Inbox = () => {
         c => c.lead_id === selectedLeadId
     );
 
-    // Auto-select first conversation once conversations are available
-    useEffect(() => {
-        if (!selectedLeadId && conversations.length > 0) {
-            const firstConversation = conversations[0];
-            if (firstConversation && firstConversation.lead_id) {
-                setSelectedLeadId(firstConversation.lead_id);
-            }
-        }
-    }, [conversations, selectedLeadId]);
+    const selectedLead = (leads || []).find(
+        l => l.id === selectedLeadId
+    );
+
 
     const fetchMessages = useCallback(async () => {
         if (!selectedConversation) return;
@@ -82,14 +78,15 @@ const Inbox = () => {
 
         const handleConversationUpdated = (payload) => {
             console.log('📨 Inbox received conversation update:', payload);
-            
+
             // Update the conversation in the list
-            if (payload.conversation) {
+            if (payload.conversation) {
+
 
                 // If this is the currently selected conversation, update messages
                 const currentSelectedConversation = selectedConversationRef.current;
                 const currentFetchMessages = fetchMessagesRef.current;
-                
+
                 if (currentSelectedConversation && payload.conversation.id === currentSelectedConversation.id) {
                     currentFetchMessages();
                 }
@@ -168,12 +165,12 @@ const Inbox = () => {
                     />
                 ) : (
                     <div className="flex-1 flex items-center justify-center text-gray-400 dark:text-gray-500">
-                        No conversation for this lead yet
+                        Select a conversation to start chatting
                     </div>
                 )}
             </div>
 
-            <ContextPanel lead={null} />
+            <ContextPanel lead={selectedLead} />
         </div>
     );
 };

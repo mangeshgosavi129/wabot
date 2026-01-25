@@ -12,6 +12,7 @@ const Settings = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [showToast, setShowToast] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const [status, setStatus] = useState(null);
 
@@ -43,12 +44,21 @@ const Settings = () => {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        // Fetch WhatsApp status (only is_connected)
+        // Fetch WhatsApp status
         const statusRes = await api.getWhatsAppStatus();
         setStatus(statusRes);
 
-        // Don't set phone_number_id from status since it's no longer included
-        // The form will remain empty until user connects or we fetch full config
+        // If connected, fetch the full config to populate the form
+        if (statusRes.is_connected) {
+          const configRes = await api.getWhatsAppConfig();
+          setConfig({
+            access_token: '', // Secrets stay empty for security
+            version: configRes.version || 'v18.0',
+            verify_token: configRes.verify_token || '',
+            app_secret: '', // Secrets stay empty for security
+            phone_number_id: configRes.phone_number_id || '',
+          });
+        }
       } catch (error) {
         console.error('Failed to fetch settings:', error);
       } finally {
@@ -87,6 +97,18 @@ const Settings = () => {
 
   const handleChange = (field, value) => {
     setConfig((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleCopyInvite = () => {
+    if (!organization?.id) return;
+
+    const baseUrl = window.location.origin;
+    const inviteUrl = `${baseUrl}/signup/join-org?org_id=${organization.id}`;
+
+    navigator.clipboard.writeText(inviteUrl).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
   };
 
 
@@ -175,13 +197,24 @@ const Settings = () => {
                     readOnly
                     className="bg-gray-50 text-gray-500"
                   />
-                  <Input
-                    label="Organization ID"
-                    value={org.id || ''}
-                    placeholder="Organization ID"
-                    readOnly
-                    className="bg-gray-50 text-gray-500"
-                  />
+                  <div className="flex items-end gap-2">
+                    <Input
+                      label="Organization ID"
+                      value={org.id || ''}
+                      placeholder="Organization ID"
+                      readOnly
+                      className="bg-gray-50 text-gray-500 flex-1"
+                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="mb-0.5"
+                      onClick={handleCopyInvite}
+                    >
+                      {copied ? <Check className="w-4 h-4" /> : <Users className="w-4 h-4 mr-2" />}
+                      {copied ? "Copied" : "Invite"}
+                    </Button>
+                  </div>
                 </div>
 
                 <div className="mt-4 text-xs text-gray-500">
@@ -259,7 +292,7 @@ const Settings = () => {
                   </div>
 
                   <div className="flex justify-between mt-6">
-                    {status && (
+                    {status?.is_connected && (
                       <Button
                         variant="outline"
                         className="text-red-500 hover:text-red-600"
@@ -275,7 +308,7 @@ const Settings = () => {
                       {isSaving && (
                         <Loader2 className="w-4 h-4 animate-spin mr-2" />
                       )}
-                      {status ? 'Update Configuration' : 'Connect WhatsApp'}
+                      {status?.is_connected ? 'Update Configuration' : 'Connect WhatsApp'}
                     </Button>
                   </div>
                 </div>

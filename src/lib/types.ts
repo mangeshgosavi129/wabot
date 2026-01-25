@@ -204,12 +204,16 @@ export interface CTAOut {
 
 export interface TemplateCreate {
     name: string;
-    content: string;
+    category: string;
+    language: string;
+    components: any[];
 }
 
 export interface TemplateUpdate {
     name?: string;
-    content?: string;
+    category?: string;
+    language?: string;
+    components?: any[];
 }
 
 export interface TemplateStatusOut {
@@ -222,7 +226,9 @@ export interface TemplateOut {
     id: string;
     organization_id: string;
     name: string;
-    content: string;
+    category?: string;
+    language?: string;
+    components?: any[];
     status: TemplateStatus;
     approved_at?: string;
     rejection_reason?: string;
