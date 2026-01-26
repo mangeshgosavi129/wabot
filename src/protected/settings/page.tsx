@@ -52,10 +52,10 @@ const Settings = () => {
         if (statusRes.is_connected) {
           const configRes = await api.getWhatsAppConfig();
           setConfig({
-            access_token: '', // Secrets stay empty for security
+            access_token: configRes.access_token || '',
             version: configRes.version || 'v18.0',
             verify_token: configRes.verify_token || '',
-            app_secret: '', // Secrets stay empty for security
+            app_secret: configRes.app_secret || '',
             phone_number_id: configRes.phone_number_id || '',
           });
         }

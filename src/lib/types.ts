@@ -302,6 +302,10 @@ export interface WhatsAppIntegrationOut {
     id: string;
     organization_id: string;
     phone_number_id: string;
+    access_token: string;
+    app_secret: string;
+    version: string;
+    verify_token: string;
     is_connected: boolean;
     created_at: string;
     updated_at?: string;
@@ -321,6 +325,8 @@ export interface AnalyticsReportOut {
     peak_activity_time: Record<string, number>;
     message_from_stats: Record<string, number>;
     intent_level_stats: Record<string, number>;
+    daily_activity: Record<string, number>;
+    stage_breakdown: Record<string, number>;
 }
 
 

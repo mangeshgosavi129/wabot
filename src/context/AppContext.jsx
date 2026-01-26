@@ -65,7 +65,7 @@ export const AppProvider = ({ children }) => {
 
     // WebSocket Management
     useEffect(() => {
-        if (isLoggedIn) {
+        if (isLoggedIn && initialDataLoaded) {
             const token = localStorage.getItem('auth_token');
             if (token) {
                 console.log('[AppContext] Initiating WebSocket connect with token present');
@@ -74,10 +74,10 @@ export const AppProvider = ({ children }) => {
                 console.warn('[AppContext] No auth_token found in localStorage; skipping WebSocket connect');
             }
         } else {
-            console.log('[AppContext] isLoggedIn=false -> disconnecting WebSocket');
+            console.log('[AppContext] isLoggedIn=false or initialDataPending -> disconnecting WebSocket');
             wsClient.disconnect();
         }
-    }, [isLoggedIn]);
+    }, [isLoggedIn, initialDataLoaded]);
 
     // WebSocket Event Router
     useEffect(() => {

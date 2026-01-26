@@ -159,11 +159,11 @@ class ApiClient {
 
     // CTAs
     async getCTAs(): Promise<CTAOut[]> {
-        return this.request<CTAOut[]>('/ctas/');
+        return this.request<CTAOut[]>('/ctas');
     }
 
     async createCTA(payload: CTACreate): Promise<CTAOut> {
-        return this.request<CTAOut>('/ctas/', {
+        return this.request<CTAOut>('/ctas', {
             method: 'POST',
             body: JSON.stringify(payload),
         });
@@ -196,7 +196,7 @@ class ApiClient {
 
     async updateTemplate(templateId: string, payload: TemplateUpdate): Promise<TemplateOut> {
         return this.request<TemplateOut>(`/templates/${templateId}`, {
-            method: 'PUT',
+            method: 'PATCH',
             body: JSON.stringify(payload),
         });
     }
@@ -222,10 +222,6 @@ class ApiClient {
         return this.request<AnalyticsReportOut>('/analytics');
     }
 
-    async getAnalyticsReport(): Promise<AnalyticsReportOut> {
-        return this.request<AnalyticsReportOut>('/analytics/report');
-    }
-
     // Users
     async getUsers(): Promise<UserOut[]> {
         return this.request<UserOut[]>('/users');
@@ -246,7 +242,7 @@ class ApiClient {
 
     // Organizations
     async getOrganization(): Promise<OrganizationOut> {
-        return this.request<OrganizationOut>(`/organisations/`);
+        return this.request<OrganizationOut>(`/organisations`);
     }
 
     // Settings
